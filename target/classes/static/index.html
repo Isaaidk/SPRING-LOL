@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Personajes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start py-10 px-4">
+
+<h1 class="text-3xl font-bold text-gray-800 mb-8">Gestión de Personajes</h1>
+
+<!-- Formulario -->
+<form id="personajeForm" class="bg-white p-6 rounded-lg shadow-md w-full max-w-md mb-10">
+    <div class="mb-4">
+        <label class="block text-gray-700 font-semibold">Nombre</label>
+        <input id="nombre" type="text" class="w-full border rounded px-3 py-2" required>
+    </div>
+    <div class="mb-4">
+        <label class="block text-gray-700 font-semibold">Origen</label>
+        <input id="origen" type="text" class="w-full border rounded px-3 py-2" required>
+    </div>
+    <div class="mb-4">
+        <label class="block text-gray-700 font-semibold">Rol</label>
+        <input id="rol" type="text" class="w-full border rounded px-3 py-2" required>
+    </div>
+    <div class="mb-4">
+        <label class="block text-gray-700 font-semibold">Alineación</label>
+        <input id="alineacion" type="text" class="w-full border rounded px-3 py-2" required>
+    </div>
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Guardar Personaje</button>
+</form>
+
+<!-- Listado de Personajes -->
+<div class="w-full max-w-4xl">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-semibold text-gray-700">Listado de Personajes</h2>
+        <button onclick="cargarPersonajes()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+            🔄 Actualizar listado
+        </button>
+    </div>
+
+    <div id="listaPersonajes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</div>
+
+<script>
+    document.getElementById("personajeForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const data = {
+            nombre: document.getElementById("nombre").value,
+            origen: document.getElementById("origen").value,
+            rol: document.getElementById("rol").value,
+            alineacion: document.getElementById("alineacion").value
+        };
+
+        fetch("/personajes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(() => {
+            document.getElementById("personajeForm").reset();
+            cargarPersonajes();
+        });
+    });
+
+    function cargarPersonajes() {
+        fetch("/personajes")
+            .then(res => res.json())
+            .then(data => {
+                const contenedor = document.getElementById("listaPersonajes");
+                contenedor.innerHTML = "";
+                const lista = data._embedded?.personajes || [];
+
+                lista.forEach(p => {
+                    const card = document.createElement("div");
+                    card.className = "bg-white p-4 rounded shadow-md border";
+
+                    card.innerHTML = `
+                        <h3 class="text-xl font-bold text-gray-800">${p.nombre}</h3>
+                        <p><strong>Origen:</strong> ${p.origen}</p>
+                        <p><strong>Rol:</strong> ${p.rol}</p>
+                        <p><strong>Alineación:</strong> ${p.alineacion}</p>
+                    `;
+
+                    contenedor.appendChild(card);
+                });
+            });
+    }
+
+    // Cargar personajes al abrir
+    cargarPersonajes();
+</script>
+</body>
+</html>
